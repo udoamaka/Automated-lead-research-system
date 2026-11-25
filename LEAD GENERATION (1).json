@@ -1,0 +1,434 @@
+{
+  "name": "LEAD GENERATION",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Lead Research Request",
+        "formDescription": "Submit a business search request and n8n will research, qualify, and organize the leads automatically.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Industry",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Location",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Lead Count",
+              "defaultValue": "10",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Minimum Rating",
+              "fieldType": "number",
+              "defaultValue": "3.0",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Has Website",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  },
+                  {
+                    "option": "Maybe"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f26973a7-3c77-49a6-8310-32c68694978d",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "400042a4-4c09-4035-a89a-46b3b18bc17e"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "nwua9Gu5YrADL7ZDj",
+          "mode": "list",
+          "cachedResultName": "Google Maps Scraper (compass/crawler-google-places)",
+          "cachedResultUrl": "https://console.apify.com/actors/nwua9Gu5YrADL7ZDj/input"
+        },
+        "customBody": "={{\n  {\n    searchStringsArray: [$('On form submission').first().json.Industry],\n    locationQuery: $('On form submission').first().json.Location,\n    maxCrawledPlacesPerSearch: Number($('On form submission').first().json['Lead Count']),\n    language: 'en'\n  }\n}}",
+        "timeout": {},
+        "memory": 128,
+        "maxTotalChargeUsd": {},
+        "authentication": "apifyOAuth2Api"
+      },
+      "id": "16eaefaf-7b11-4920-b0ee-aaeee4114bc6",
+      "name": "Run an Actor and get dataset",
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "executeOnce": false,
+      "retryOnFail": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "apifyOAuth2Api": {
+          "id": "WLrmsZFfrrByPwQV",
+          "name": "Apify account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "af038b65-824b-4646-936c-be03b60a4d26",
+              "name": "Business Name",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "a55f7012-7194-4a91-addd-3c1d6b9f033a",
+              "name": "=Business Category",
+              "value": "={{ $json.categories }}",
+              "type": "string"
+            },
+            {
+              "id": "4f44deee-6935-4e63-9603-b665d46d1ca8",
+              "name": "Phone Number",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "a997b124-930a-46c6-9e40-837ecfdafb32",
+              "name": "Email",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "e96cb211-b8f7-48c9-8819-e8297fe58b8f",
+              "name": "=Website",
+              "value": "={{ $json.website }}",
+              "type": "string"
+            },
+            {
+              "id": "2fc8f121-5553-4ceb-8cfb-9cde24f9d207",
+              "name": "Address",
+              "value": "={{ $json.address }}",
+              "type": "string"
+            },
+            {
+              "id": "a47fc6b6-d636-48db-9352-0e5310fc4e41",
+              "name": "City",
+              "value": "={{ $json.city }}",
+              "type": "string"
+            },
+            {
+              "id": "f1260427-0828-4630-b691-dd05f39c967e",
+              "name": "Rating",
+              "value": "={{ $json.totalScore }}",
+              "type": "string"
+            },
+            {
+              "id": "5bbcdfab-9f86-459c-ad4c-8f131716b94d",
+              "name": "Google Maps URL",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "ca463796-893e-4ce9-a94e-7a087d32ae81",
+              "name": "=Lead Quality",
+              "value": "={{\n  $json.totalScore != null &&\n  Number($json.totalScore) >= Number($('On form submission').first().json['Minimum Rating']) &&\n  (\n    String($('On form submission').first().json['Has Website']).toLowerCase() !== 'yes' ||\n    ($json.website != null && String($json.website).trim() !== '')\n  )\n    ? 'Qualified'\n    : 'Not Qualified'\n}}",
+              "type": "string"
+            },
+            {
+              "id": "de244d98-24cb-4fc7-ba77-783b54211cb3",
+              "name": "Lead Status",
+              "value": "New",
+              "type": "string"
+            },
+            {
+              "id": "744a3263-5f0e-4bdd-b46b-2879d69f553a",
+              "name": "Notes",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9a7ad93b-ab36-4489-bb6f-2f6b73daaf41",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1E8vMmZoZVZA8JbShX8GM3aK76ojBrWbmk2UF5OmAOMg",
+          "mode": "list",
+          "cachedResultName": "LEAD GENERATION & QUALIFICATION",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E8vMmZoZVZA8JbShX8GM3aK76ojBrWbmk2UF5OmAOMg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E8vMmZoZVZA8JbShX8GM3aK76ojBrWbmk2UF5OmAOMg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Business Name",
+              "displayName": "Business Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Business Category",
+              "displayName": "Business Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "City",
+              "displayName": "City",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Google Maps URL",
+              "displayName": "Google Maps URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Quality",
+              "displayName": "Lead Quality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f4cf43c9-e311-44dd-b549-94d83714b53c",
+      "name": "Append row in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        704,
+        16
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mctWicC4aOsTUDID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "stephaniecharles944@gmail.com",
+        "subject": "=Lead Research Completed Successfully",
+        "message": "=<div style=\"font-family: Arial, sans-serif; color: #333; line-height: 1.7; max-width: 600px;\">\n  <h2 style=\"color: #222;\">Lead Research Completed</h2>\n\n  <p>Hello,</p>\n\n  <p>Your lead research process has been completed successfully.</p>\n\n  <p>The latest search results have been processed and saved to your Google Sheets lead tracker.</p>\n\n  <p><strong>Next step:</strong> Open your tracker to review the newly collected businesses, their contact information, and their qualification status.</p>\n\n  <p>Thank you.</p>\n\n  <p><strong>Lead Research &amp; Qualification System</strong></p>\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        912,
+        32
+      ],
+      "id": "c7f085f0-4f4c-4313-84e2-bf1cd4710032",
+      "name": "Send a message",
+      "webhookId": "d7dab4d6-b70b-4580-86f8-194a2eb3e53f",
+      "executeOnce": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "fFffCgxoktxSj3o9",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor and get dataset": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4b5ea110-5e7b-43aa-9a6e-da8afa01c47b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edc3377e5bf3c2492004846febc88df28bccf6e72cf3d2d3ee73e9f25df73dea"
+  },
+  "nodeGroups": [],
+  "id": "Gfp3uYTVNL543LA6",
+  "tags": []
+}
